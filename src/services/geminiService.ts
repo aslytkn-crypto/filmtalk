@@ -1,7 +1,3 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export interface Movie {
   id: string;
   title: string;
@@ -13,60 +9,32 @@ export interface Movie {
 }
 
 export async function getMovieRecommendations(userPreferences: string): Promise<Movie[]> {
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Recommend 6 movies based on these preferences: ${userPreferences}. Return a JSON array of objects with id, title, year, genre, description, rating (out of 10), and a search keyword for an image.`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            title: { type: Type.STRING },
-            year: { type: Type.STRING },
-            genre: { type: Type.STRING },
-            description: { type: Type.STRING },
-            rating: { type: Type.NUMBER },
-            imageKeyword: { type: Type.STRING },
-          },
-          required: ["id", "title", "year", "genre", "description", "rating", "imageKeyword"],
-        },
-      },
-    },
+  const response = await fetch("/api/recommendations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ preferences: userPreferences }),
   });
-
-  const data = JSON.parse(response.text || "[]");
-  return data.map((m: any) => ({
-    ...m,
-    imageUrl: `https://picsum.photos/seed/${m.imageKeyword}/400/600`,
-  }));
+  if (!response.ok) throw new Error("Failed to fetch recommendations");
+  return response.json();
 }
 
 export async function summarizeChat(messages: { user: string; text: string }[]): Promise<string> {
-  const chatHistory = messages.map(m => `${m.user}: ${m.text}`).join("\n");
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Summarize the following movie chat discussion in 2-3 sentences, highlighting the main movies discussed and the general sentiment:\n\n${chatHistory}`,
+  const response = await fetch("/api/summarize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
   });
-
-  return response.text || "No summary available.";
+  if (!response.ok) throw new Error("Failed to fetch summary");
+  const data = await response.json();
+  return data.summary;
 }
 
 export async function tagChat(messages: { user: string; text: string }[]): Promise<string[]> {
-  const chatHistory = messages.map(m => `${m.user}: ${m.text}`).join("\n");
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Analyze this movie chat and provide 3-5 relevant tags (genres, emotions, or themes discussed). Return as a JSON array of strings.\n\n${chatHistory}`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: { type: Type.STRING },
-      },
-    },
+  const response = await fetch("/api/tags", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
   });
-
-  return JSON.parse(response.text || "[]");
+  if (!response.ok) throw new Error("Failed to fetch tags");
+  return response.json();
 }

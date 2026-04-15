@@ -1,3 +1,4 @@
+import app from "./src/server/app";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -5,7 +6,6 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 
 async function startServer() {
-  const app = express();
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
@@ -15,7 +15,7 @@ async function startServer() {
 
   const PORT = 3000;
 
-  // Socket.io logic
+  // Socket.io logic (Note: This won't work on Vercel Serverless)
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
@@ -25,18 +25,12 @@ async function startServer() {
     });
 
     socket.on("send-message", (data) => {
-      // data: { room, message, user, timestamp }
       io.to(data.room).emit("receive-message", data);
     });
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
     });
-  });
-
-  // API Routes
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok" });
   });
 
   // Vite middleware for development
