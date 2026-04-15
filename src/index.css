@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #E50914;
+  --color-brand-black: var(--bg-main);
+  --color-brand-dark: var(--bg-card);
+  --color-border: var(--border-color);
+  --color-text-main: var(--text-main);
+  --color-text-dim: var(--text-dim);
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  --bg-main: #070707;
+  --bg-card: #121212;
+  --text-main: #FFFFFF;
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.light {
+  --bg-main: #FFFFFF;
+  --bg-card: #F5F5F5;
+  --text-main: #000000;
+  --text-dim: rgba(0, 0, 0, 0.6);
+  --border-color: rgba(0, 0, 0, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-black text-text-main antialiased font-sans transition-colors duration-300;
+  }
+
+  h1 {
+    @apply text-[80px] font-black leading-[0.9] tracking-[-0.04em] uppercase;
+  }
+
+  h2 {
+    @apply text-xs font-bold uppercase tracking-[0.2em] text-brand-red;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-black;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-red;
+  }
+}
+
+.card-bold {
+  @apply bg-brand-dark border border-border p-6;
+}
+
+.label-bold {
+  @apply text-[11px] font-extrabold uppercase tracking-[0.2em] text-text-dim;
+}
+
+.btn-bold {
+  @apply bg-brand-red text-white px-6 py-2 rounded-[2px] text-[12px] font-bold uppercase tracking-wider transition-all hover:brightness-110;
+}
